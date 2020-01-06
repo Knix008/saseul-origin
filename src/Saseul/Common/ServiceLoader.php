@@ -62,7 +62,7 @@ class ServiceLoader
         $check_mongo = Env::checkMongo();
 
         if (!$check_mongo) {
-            $msg = "Memcached is not running. ";
+            $msg = "MongoDB is not running. ";
 
             Debugger::info($msg);
             Logger::debug($msg, true);

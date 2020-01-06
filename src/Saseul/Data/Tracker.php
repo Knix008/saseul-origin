@@ -8,6 +8,7 @@ use Saseul\Core\Key;
 use Saseul\Core\Property;
 use Saseul\Core\Rule;
 use Saseul\System\Database;
+use Saseul\Util\Logger;
 use Saseul\Util\Parser;
 use Saseul\Util\RestCall;
 
@@ -450,10 +451,14 @@ class Tracker
         return $role;
     }
 
-    # TODO: need ping test;
     public static function getRandomValidator()
     {
-        $validators = self::getAccessibleValidators();
+        $validators = Property::aliveValidator();
+
+        if (count($validators) === 0) {
+            $validators = self::pingOkValidators();
+        }
+
         $count = count($validators);
         $pick = rand(0, $count - 1);
 
@@ -462,5 +467,44 @@ class Tracker
         }
 
         return [];
+    }
+
+    public static function pingOkValidators()
+    {
+        $validators = self::getAccessibleValidators();
+        $hosts = [];
+        $addresses = [];
+
+        foreach ($validators as $validator)
+        {
+            if (isset($validator['host']) && isset($validator['address']))
+            {
+                $hosts[] = $validator['host'];
+                $addresses[$validator['host']] = $validator['address'];
+            }
+        }
+
+        if (count($hosts) === 0) {
+            return [];
+        }
+
+        $rest = RestCall::GetInstance();
+        $results = $rest->multiPOST($hosts, 'ping');
+        $validators = [];
+
+        foreach ($results as $item) {
+            $r = json_decode($item['result'], true);
+            $status = $r['status'] ?? '';
+
+            if ($status === 'success') {
+                $host = $item['host'];
+                $validators[] = [
+                    'host' => $host,
+                    'address' => $addresses[$host],
+                ];
+            }
+        }
+
+        return $validators;
     }
 }
