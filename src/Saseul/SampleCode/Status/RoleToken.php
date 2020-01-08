@@ -134,7 +134,7 @@ class S1 extends Status
             $this->db->BulkWrite($namespace);
         }
 
-        self::_reset();
+        $this->_reset();
     }
 
     public function loadToken(string $address, string $token_name): void

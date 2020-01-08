@@ -58,7 +58,6 @@ class S2 extends Status
                 ]
             ]);
         }
-
     }
 
     public function _reset(): void
@@ -130,7 +129,6 @@ class S2 extends Status
 
     public function _save(): void
     {
-        $db = Database::GetInstance();
         $namespace = $this->dbname.'.'.$this->collection;
 
         foreach ($this->balances as $k => $v) {
@@ -139,7 +137,7 @@ class S2 extends Status
                 '$set' => ['balance' => $v],
             ];
             $opt = ['upsert' => true];
-            $db->bulk->update($filter, $row, $opt);
+            $this->db->bulk->update($filter, $row, $opt);
         }
 
         foreach ($this->deposits as $k => $v) {
@@ -148,14 +146,14 @@ class S2 extends Status
                 '$set' => ['deposit' => $v],
             ];
             $opt = ['upsert' => true];
-            $db->bulk->update($filter, $row, $opt);
+            $this->db->bulk->update($filter, $row, $opt);
         }
 
-        if ($db->bulk->count() > 0) {
-            $db->BulkWrite($namespace);
+        if ($this->db->bulk->count() > 0) {
+            $this->db->BulkWrite($namespace);
         }
 
-        self::_reset();
+        $this->_reset();
     }
 
     private function farmedAmount(string $seed): string
