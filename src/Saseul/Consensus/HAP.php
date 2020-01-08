@@ -105,7 +105,7 @@ class HAP
 
     public function networking(): void
     {
-        if (count(Tracker::getAccessibleValidators()) > 2 && count($this->alive_validators) === 1) {
+        if (count(Tracker::getValidatorAddress()) > 2 && count($this->alive_validators) === 1) {
             $this->result = Event::ALONE;
             return;
         }
@@ -217,13 +217,22 @@ class HAP
         $expect_blockhash = $best_hash_info['blockhash'];
         $hash_leader = $best_hash_info['address'];
 
+        $net_address = array_keys($net_hash_info);
+
+        # alone;
+        if (!in_array(Env::getAddress(), $net_address) ||
+            (count(Tracker::getValidatorAddress()) > 2 && count($net_address) === 1)) {
+            $this->result = Event::ALONE;
+            return;
+        }
+
         # need data pulling;
         if ($expect_blockhash === '') {
             $this->result = Event::DATA_DIFFERENT;
             return;
         }
 
-        # need wait;
+        # need ban;
         if ($expect_blockhash !== $my_blockhash) {
             $this->setSubjectAddress($hash_leader);
             $this->result = Event::HASH_DIFFERENT;
@@ -287,8 +296,10 @@ class HAP
             case Event::BLOCK_FAIL:
                 $this->exclude();
                 break;
+            case Event::HASH_DIFFERENT:
             case Event::TRIGGER_LYING:
                 $this->ban();
+                usleep(Rule::MICROINTERVAL_OF_CHUNK);
                 break;
             case Event::NOTHING:
             case Event::ALONE:
@@ -299,14 +310,6 @@ class HAP
                 $this->success();
                 break;
         }
-
-//        IMLog::add('[Debug] '. json_encode([
-//            'use_bunch' => $this->use_bunch,
-//            'ban_fail_count' => $this->ban_fail_count,
-//            'exclude_fail_count' => $this->exclude_fail_count,
-//            'subject_host' => $this->subject_host,
-//            'subject_address' => $this->subject_address,
-//        ]));
 
         IMLog::add("[FinishingWork] end; {$this->etime()} s ");
         IMLog::add('[Memory] usage: '.(int)(memory_get_usage(true)/1000000).'M');

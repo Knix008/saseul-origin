@@ -20,8 +20,10 @@ class Broadcast2 extends Api
         $public_key = $this->getParam($_REQUEST, 'public_key');
         $signature = $this->getParam($_REQUEST, 'signature');
 
-        if ($max_time > DateTime::Microtime()) {
-            $max_time = DateTime::Microtime();
+        if ($max_time % Rule::MICROINTERVAL_OF_CHUNK !== 0 ||
+            $min_time % Rule::MICROINTERVAL_OF_CHUNK !== 0 ||
+            $max_time > DateTime::Microtime()) {
+            return;
         }
 
         $this->checkParam($req_time, $public_key, $signature);

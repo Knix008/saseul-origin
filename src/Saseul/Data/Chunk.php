@@ -38,7 +38,7 @@ class Chunk
 
             $tid = preg_replace('/[^0-9]/', '', $dir);
 
-            if ((int) $tid > (int) $last_s_timestamp && (int) $tid < (int) $expect_s_timestamp) {
+            if ((int) $tid > (int) $last_s_timestamp && (int) $tid <= (int) $expect_s_timestamp) {
                 # transactions exists;
                 return $expect_s_timestamp;
             }

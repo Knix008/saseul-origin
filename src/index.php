@@ -16,9 +16,4 @@ header('Access-Control-Allow-Origin: *');
 $apiLoader = new Saseul\Common\ApiLoader();
 $apiLoader->main();
 
-# TODO: Modifying getRandomValidator
 # TODO: Making debug mode
-# TODO: Testing mongoDB injection
-
-# TODO: 두 Node가 같은 Address로 다른 의견 내는 경우의 문제.
-# TODO: Arbiter 기능 공개.
